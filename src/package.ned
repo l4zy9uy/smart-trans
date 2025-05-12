@@ -1,0 +1,3 @@
+package finalproject;
+
+@license(LGPL);

@@ -1,0 +1,149 @@
+version 3
+run Default-0-20250512-21:30:28-266266
+attr configname Default
+attr datetime 20250512-21:30:28
+attr datetimef 20250512-213028
+attr experiment Default
+attr inifile omnetpp.ini
+attr iterationvars ""
+attr iterationvarsd ""
+attr iterationvarsf ""
+attr measurement ""
+attr network RSUExampleScenario
+attr processid 266266
+attr repetition 0
+attr replication #0
+attr resultdir results
+attr runnumber 0
+attr seedset 0
+config image-path ../../../inet/images:../../../veins/images
+config cmdenv-express-mode true
+config cmdenv-autoflush true
+config cmdenv-status-frequency 1s
+config **.cmdenv-log-level info
+config image-path ../../images
+config network RSUExampleScenario
+config debug-on-errors true
+config print-undisposed true
+config sim-time-limit 200s
+config **.scalar-recording true
+config **.vector-recording true
+config *.playgroundSizeX 2500m
+config *.playgroundSizeY 2500m
+config *.playgroundSizeZ 50m
+config *.annotations.draw true
+config *.manager.updateInterval 1s
+config *.manager.host "\"localhost\""
+config *.manager.port 9999
+config *.manager.autoShutdown true
+config *.manager.launchConfig "xmldoc(\"square.launchd.xml\")"
+config *.manager.moduleType "\"org.car2x.veins.nodes.Car\""
+config *.manager.moduleName "\"node\""
+config *.manager.moduleDisplayString "\"\""
+config *.rsu[0].mobility.x 100
+config *.rsu[0].mobility.y 100
+config *.rsu[0].mobility.z 3
+config *.rsu[*].applType "\"finalproject.simulations.veins5Final.RSUControlApp\""
+config *.rsu[*].appl.headerLength "80 bit"
+config *.rsu[*].appl.sendBeacons false
+config *.rsu[*].appl.dataOnSch false
+config *.rsu[*].nic.phy80211p.antennaOffsetZ "0 m"
+config *.connectionManager.sendDirect true
+config *.connectionManager.maxInterfDist 2600m
+config *.connectionManager.drawMaxIntfDist false
+config *.**.nic.mac1609_4.useServiceChannel false
+config *.**.nic.mac1609_4.txPower 20mW
+config *.**.nic.mac1609_4.bitrate 6Mbps
+config *.**.nic.phy80211p.minPowerLevel -110dBm
+config *.**.nic.phy80211p.useNoiseFloor true
+config *.**.nic.phy80211p.noiseFloor -98dBm
+config *.**.nic.phy80211p.decider "xmldoc(\"config.xml\")"
+config *.**.nic.phy80211p.analogueModels "xmldoc(\"config.xml\")"
+config *.**.nic.phy80211p.usePropagationDelay true
+config *.**.nic.phy80211p.antenna "xmldoc(\"antenna.xml\", \"/root/Antenna[@id='monopole']\")"
+config *.node[*].nic.phy80211p.antennaOffsetY "0 m"
+config *.node[*].nic.phy80211p.antennaOffsetZ "1.895 m"
+config *.node[*].applType "\"finalproject.simulations.veins5Final.VehicleControlApp\""
+config *.node[*].appl.headerLength "80 bit"
+config *.node[*].appl.sendBeacons false
+config *.node[*].appl.dataOnSch false
+config *.node[*].appl.beaconInterval 1s
+config *.node[*].veinsmobility.x 0
+config *.node[*].veinsmobility.y 0
+config *.node[*].veinsmobility.z 0
+config *.node[*].veinsmobility.setHostSpeed false
+config *.node[*0].veinsmobility.accidentCount 0
+
+vector 0 RSUExampleScenario.rsu[0].nic.phy80211p RadioState ETV
+vector 1 RSUExampleScenario.rsu[0].nic.phy80211p RadioChannel ETV
+vector 2 RSUExampleScenario.node[0].nic.phy80211p RadioState ETV
+vector 3 RSUExampleScenario.node[0].nic.phy80211p RadioChannel ETV
+vector 4 RSUExampleScenario.manager posx ETV
+vector 5 RSUExampleScenario.manager posy ETV
+vector 6 RSUExampleScenario.node[1].nic.phy80211p RadioState ETV
+vector 7 RSUExampleScenario.node[1].nic.phy80211p RadioChannel ETV
+vector 8 RSUExampleScenario.manager posx ETV
+vector 9 RSUExampleScenario.manager posy ETV
+vector 10 RSUExampleScenario.node[2].nic.phy80211p RadioState ETV
+vector 11 RSUExampleScenario.node[2].nic.phy80211p RadioChannel ETV
+vector 12 RSUExampleScenario.manager posx ETV
+vector 13 RSUExampleScenario.manager posy ETV
+vector 14 RSUExampleScenario.node[3].nic.phy80211p RadioState ETV
+vector 15 RSUExampleScenario.node[3].nic.phy80211p RadioChannel ETV
+vector 16 RSUExampleScenario.manager posx ETV
+vector 17 RSUExampleScenario.manager posy ETV
+vector 18 RSUExampleScenario.node[4].nic.phy80211p RadioState ETV
+vector 19 RSUExampleScenario.node[4].nic.phy80211p RadioChannel ETV
+vector 20 RSUExampleScenario.manager posx ETV
+vector 21 RSUExampleScenario.manager posy ETV
+vector 22 RSUExampleScenario.node[5].nic.phy80211p RadioState ETV
+vector 23 RSUExampleScenario.node[5].nic.phy80211p RadioChannel ETV
+vector 24 RSUExampleScenario.manager posx ETV
+vector 25 RSUExampleScenario.manager posy ETV
+vector 26 RSUExampleScenario.node[6].nic.phy80211p RadioState ETV
+vector 27 RSUExampleScenario.node[6].nic.phy80211p RadioChannel ETV
+vector 28 RSUExampleScenario.manager posx ETV
+vector 29 RSUExampleScenario.manager posy ETV
+vector 30 RSUExampleScenario.manager speed ETV
+vector 31 RSUExampleScenario.manager speed ETV
+vector 32 RSUExampleScenario.manager speed ETV
+vector 33 RSUExampleScenario.manager speed ETV
+vector 34 RSUExampleScenario.manager speed ETV
+vector 35 RSUExampleScenario.manager speed ETV
+vector 36 RSUExampleScenario.manager speed ETV
+4	3	1	1563.9029927045
+4	4	2	1561.4184145193
+5	3	1	1044.4240230608
+5	4	2	1045.2951694426
+8	3	1	686.97062041156
+8	4	2	686.82525105954
+9	3	1	1004.8341723029
+9	4	2	1014.1695463947
+12	3	1	1265.2032765987
+12	4	2	1258.6916726244
+13	3	1	1288.9399805958
+13	4	2	1290.0806577005
+16	3	1	855.17673787916
+16	4	2	868.89472085794
+17	3	1	1554.804371699
+17	4	2	1548.432835993
+20	3	1	1385.4356651484
+20	4	2	1378.1558161889
+21	3	1	846.17498865256
+21	4	2	851.16722372264
+24	3	1	1063.5096354791
+24	4	2	1063.9795754378
+25	3	1	1045.2577340994
+25	4	2	1048.3237843173
+28	3	1	1803.3256655166
+28	4	2	1806.0443868725
+29	3	1	1576.6605963571
+29	4	2	1583.879822579
+30	4	2	5.3868928797981
+31	4	2	11.791426946156
+32	4	2	9.0804636746046
+33	4	2	15.933514574104
+34	4	2	13.047285295834
+35	4	2	4.5938899228489
+36	4	2	8.5701671335311
+
