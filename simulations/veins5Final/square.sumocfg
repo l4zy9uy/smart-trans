@@ -16,6 +16,7 @@
 
     <processing>
         <lanechange.duration value="1.5"/>
+		<ignore-route-errors value="true"/>
     </processing>
 
     <report>

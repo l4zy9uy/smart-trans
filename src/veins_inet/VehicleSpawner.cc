@@ -10,108 +10,82 @@
 Define_Module(VehicleSpawner);
 
 void VehicleSpawner::initialize() {
+    //BaseModule::initialize(stage);
     // Schedule an event at time 0 to insert vehicles
-    std::random_device rd;
-    rng.seed(rd());
+        xml = std::make_unique<XMLProcessorBoost>("../../simulations/veins5Final/square.net.xml", "net");
+        graph_   = std::make_unique<GraphProcessor>(*xml);
+        taskGen_ = std::make_unique<TaskGenerator>(*graph_);
 
-    cMessage* msg = new cMessage("spawnVehicles");
-    scheduleAt(simTime() + 0.1, msg);
+
+        // ---------- TraCI is up; schedule spawn after 0.1 s ----------
+        spawnTimer = new cMessage("spawnVehicles");
+        scheduleAt(simTime() + 0.1, spawnTimer);
 }
 
 void VehicleSpawner::handleMessage(cMessage* msg) {
-    // Only handle the self-scheduled spawn trigger message
-    if (!msg->isSelfMessage()) {
-        // (Optional: call base class or handle other messages if any)
-        return;
-    }
+    if (!msg->isSelfMessage()) {return; }
+    // Generate 5 random (src, dst) tasks
+    manager_ = TraCIScenarioManagerAccess().get();
+    traci_   = manager_->getCommandInterface();
 
-    // Obtain the TraCI command interface (assumes TraCIScenarioManager is accessible)
-    TraCIScenarioManager* manager = TraCIScenarioManagerAccess().get();
-    ASSERT(manager);
-    TraCICommandInterface* traci = manager->getCommandInterface();
+    const int N = 5;
+    auto sources = taskGen_->pickSourceDest(N).first;
+    auto dests = taskGen_->pickSourceDest(N).second;
 
-    // Get all road edge IDs from TraCI and filter out invalid spawn edges (e.g., internal edges)
-    std::list<std::string> allEdges = traci->getRoadIds();
-    std::vector<std::string> spawnEdges;
-    spawnEdges.reserve(allEdges.size());
-    for (const std::string& edgeId : allEdges) {
-        if (!edgeId.empty() && edgeId[0] == ':') {
-            continue;  // skip internal junction edges (not valid for spawning vehicles)
+    for (int i = 0; i < N; ++i) {
+        const std::string& src = sources[i];
+        const std::string& dst = dests[i];
+
+        // 4a) Compute shortest path
+        auto paths = graph_->getKShortestPaths(src, dst, 1);
+        if (paths.empty()) {
+            EV_WARN << "No path from " << src << " to " << dst << '\n';
+            continue;
         }
-        spawnEdges.push_back(edgeId);
+        const auto& path   = paths[0];
+        const auto& edges  = path.edges;
+
+        // 4b) Build unique IDs
+        std::ostringstream oss;
+        oss << "rsuVeh_" << simTime() << "_" << i;
+        std::string vehId   = oss.str();
+        std::string routeId = vehId + "_route";
+
+        std::list<std::string> edgeList(edges.begin(), edges.end());
+        traci_->addRoute(routeId, edgeList);
+
+        // ------- 4d) Spawn the vehicle on that route ----------------------------
+        std::string vehType = "DEFAULT_VEHTYPE";                    // or any valid SUMO type
+        traci_->addVehicle(vehId, vehType, routeId, simTime().dbl());
+
+        // 4e) Set desired speed
+        double speed = 15.5;
+        traci_->vehicle(vehId).setSpeed(speed);
+
+        // 4f) Time-window as generic parameters
+        double tEarliest = 75;
+        double tLatest   = 90;
+        if (tLatest < tEarliest) std::swap(tEarliest, tLatest);
+
+        traci_->vehicle(vehId).setParameter("timeWindowEarliest", std::to_string(tEarliest));
+       traci_->vehicle(vehId).setParameter("timeWindowLatest",   std::to_string(tLatest));
+       traci_->vehicle(vehId).setParameter("srcJunction", src);
+       traci_->vehicle(vehId).setParameter("dstJunction", dst);
+
+       // --------------------------------------------------------------
+       // store remaining distance to destination (in metres)
+       // path.length is provided by GraphProcessor
+       // --------------------------------------------------------------
+       double remainingDist = path.length;
+       traci_->vehicle(vehId).setParameter("remainingDist", std::to_string(remainingDist));
+
+        EV_INFO << "Spawned " << vehId
+                << " src=" << src << " dst=" << dst
+                << " speed=" << speed
+                << " tw=[" << tEarliest << ',' << tLatest << "]\n";
     }
-
-    // Check that we have some valid edges to spawn on
-    if (spawnEdges.empty()) {
-        EV_WARN << "No valid road edges available for vehicle spawning." << std::endl;
-    } else {
-        int vehiclesAdded = 0;
-        int attempts = 0;
-        const int maxVehicles = 7;
-        const int maxAttempts = maxVehicles * 5;
-        std::string vehicleTypeId = "DEFAULT_VEHTYPE";
-
-        // Loop until 7 vehicles are added or 20 attempts made
-        while (vehiclesAdded < maxVehicles && attempts < maxAttempts) {
-            attempts++;
-
-            // Pick a random edge from the valid list as the spawn location
-            std::uniform_int_distribution<int> pickEdge(0, spawnEdges.size() - 1);
-            std::string startEdge = spawnEdges[pickEdge(rng)];
-
-            // Generate unique IDs for the new route and vehicle
-            static int uniqueIdCounter = 0;
-            uniqueIdCounter++;
-            std::string routeId = "spawnedRoute_" + std::to_string(uniqueIdCounter);
-            std::string vehicleId = "spawnedVeh_" + std::to_string(uniqueIdCounter);
-
-            // Attempt to add a new route on the selected edge(s)
-            try {
-                // Here we create a route consisting of the single chosen edge.
-                // (You could extend this to multiple edges if needed, ensuring they form a connected path.)
-                std::list<std::string> routeEdges = { startEdge };
-                traci->addRoute(routeId, routeEdges);  // may throw if route creation fails
-            }
-            catch (cRuntimeError& e) {
-                EV_WARN << "Failed to add route " << routeId
-                        << " for edge " << startEdge
-                        << " (attempt " << attempts << "): " << e.what() << std::endl;
-                continue;  // skip to the next attempt without trying to add vehicle
-            }
-
-            // If addRoute did not throw, we assume the route was created successfully.
-            // Now attempt to add the vehicle on that route.
-            try {
-                bool ok = traci->addVehicle(vehicleId, vehicleTypeId, routeId);
-                if (!ok) {
-                    // addVehicle returned false, meaning the vehicle was not added (no exception thrown)
-                    EV_WARN << "Vehicle " << vehicleId
-                            << " could not be added on edge " << startEdge
-                            << " (attempt " << attempts << ") – addVehicle returned false." << std::endl;
-                    continue;  // try another edge
-                }
-            }
-            catch (cRuntimeError& e) {
-                EV_WARN << "Error adding vehicle " << vehicleId
-                        << " on edge " << startEdge
-                        << " (attempt " << attempts << "): " << e.what() << std::endl;
-                // (Optionally, one could remove the previously added route here if desired)
-                continue;
-            }
-
-            // If we reach here, the vehicle was added successfully
-            vehiclesAdded++;
-            EV_INFO << "Successfully spawned vehicle " << vehicleId
-                    << " on edge " << startEdge << " (attempt " << attempts << ")." << std::endl;
-        }  // end while
-
-        if (vehiclesAdded < maxVehicles) {
-            EV_WARN << "Spawner stopped after " << attempts
-                    << " attempts with " << vehiclesAdded
-                    << " vehicles added (target was " << maxVehicles << ")." << std::endl;
-        }
-    }
-
-    // Clean up the self-message after handling to avoid memory leak
+    // Clean up the spawn timer
     delete msg;
+    spawnTimer = nullptr;
 }
+

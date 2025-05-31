@@ -35,7 +35,10 @@ O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 # Object files for local .cc, .msg and .sm files
 OBJS = \
     $O/veins_inet/Constant.o \
+    $O/veins_inet/GraphProcessor.o \
+    $O/veins_inet/Logger.o \
     $O/veins_inet/RSUControlApp.o \
+    $O/veins_inet/TaskGenerator.o \
     $O/veins_inet/VehicleControlApp.o \
     $O/veins_inet/VehicleSpawner.o \
     $O/veins_inet/VeinsInetApplicationBase.o \
@@ -45,6 +48,7 @@ OBJS = \
     $O/veins_inet/VeinsInetMobility.o \
     $O/veins_inet/VeinsInetSampleApplication.o \
     $O/veins_inet/VeinsInetTransparentMobility.o \
+    $O/veins_inet/XMLProcessor.o \
     $O/veins_inet/VeinsInetSampleMessage_m.o
 
 # Message files

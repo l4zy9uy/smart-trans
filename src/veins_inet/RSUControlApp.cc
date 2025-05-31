@@ -4,6 +4,7 @@
 #include "veins/modules/application/traci/TraCIDemo11pMessage_m.h"
 #include <cstring>
 #include <boost/json.hpp>
+#include <list>
 
 namespace json = boost::json;
 
@@ -18,14 +19,15 @@ char* RSUControlApp::mergeContent(long vehAddr) {
 }
 
 void RSUControlApp::initialize(int stage) {
-    DemoBaseApplLayer::initialize(stage);
-    messageCount = 0;
     if (stage == 0) {
-        sendBeacon = new cMessage("send Beacon");
-    } else if (stage == 1) {
-        // Initializing members that require initialized other modules goes here
+        manager_ = TraCIScenarioManagerAccess().get();
+        // we don’t need TraCI right now, but keep a pointer for future use
+        // (it will be valid from stage 1 on)
     }
-
+    else if (stage == 1) {
+        // TraCI connection is up → get command interface
+        traci_ = manager_->getCommandInterface();
+    }
 }
 
 void RSUControlApp::finish() {
@@ -41,33 +43,33 @@ void RSUControlApp::onBSM(DemoSafetyMessage *bsm) {
 void RSUControlApp::onWSM(BaseFrame1609_4* wsm) {
     auto* enc = wsm->getEncapsulatedPacket();
     if (auto* bc = dynamic_cast<TraCIDemo11pMessage*>(enc)) {
-        messageCount++;
-        EV_INFO << "RSU recv #" << messageCount << " at " << simTime() << endl;
-
-        if (messageCount % 5 == 0) {
-            // pick a target edge
-            std::string newEdge = "E30";
-
-            // --- build JSON with Boost.JSON ---
-            json::object jobj;
-            jobj["action"]     = "redirect";
-            jobj["targetEdge"] = newEdge;
-
-            std::string jsonText = json::serialize(jobj);
-            EV_INFO << "RSU JSON: " << jsonText << endl;
-
-            // send redirect WSM
-            auto* reply = new TraCIDemo11pMessage();
-            reply->setDemoData(strdup(jsonText.c_str()));
-            reply->setSenderAddress(myId);
-
-            auto* frame = new BaseFrame1609_4();
-            frame->encapsulate(reply);
-            populateWSM(frame);
-            send(frame, lowerLayerOut);
-
-            EV_INFO << "RSU sent REDIRECT to " << newEdge << endl;
-        }
+//        messageCount++;
+//        EV_INFO << "RSU recv #" << messageCount << " at " << simTime() << endl;
+//
+//        if (messageCount % 5 == 0) {
+//            // pick a target edge
+//            std::string newEdge = "E30";
+//
+//            // --- build JSON with Boost.JSON ---
+//            json::object jobj;
+//            jobj["action"]     = "redirect";
+//            jobj["targetEdge"] = newEdge;
+//
+//            std::string jsonText = json::serialize(jobj);
+//            EV_INFO << "RSU JSON: " << jsonText << endl;
+//
+//            // send redirect WSM
+//            auto* reply = new TraCIDemo11pMessage();
+//            reply->setDemoData(strdup(jsonText.c_str()));
+//            reply->setSenderAddress(myId);
+//
+//            auto* frame = new BaseFrame1609_4();
+//            frame->encapsulate(reply);
+//            populateWSM(frame);
+//            send(frame, lowerLayerOut);
+//
+//            EV_INFO << "RSU sent REDIRECT to " << newEdge << endl;
+//        }
     }
 }
 

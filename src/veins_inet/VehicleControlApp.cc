@@ -28,6 +28,14 @@ void VehicleControlApp::initialize(int stage)
     else if (stage == 1) {
         // Schedule first beacon at 5 seconds
         double jitter = uniform(0, 0.5);        // ≤ 0.5 s random offset
+        mobility   = TraCIMobilityAccess().get(getParentModule());
+        traci      = mobility->getCommandInterface();
+        traciVehicle   = mobility->getVehicleCommandInterface();
+        traciVehicle->getParameter("srcJunction", srcJunc_);
+        traciVehicle->getParameter("dstJunction", dstJunc_);
+        EV_INFO << "Vehicle knows src=" << srcJunc_
+                << " dst=" << dstJunc_ << endl;
+
         scheduleAt(simTime() + 1.0 + jitter, sendBeacon);
         //scheduleAt(simTime() + 1, sendBeacon);
         EV << "Scheduled periodic beacon every 1s." << endl;

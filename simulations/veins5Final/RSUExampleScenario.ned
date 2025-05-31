@@ -32,6 +32,8 @@ simple VehicleSpawner {
         int numVehicles @default(7);
         double spawnTime @default(0.1s);
         @display("i=block/app");
+        double targetTravelTime @unit(s) = default(30s);  // make it configurable
+        
     gates:
         // none
 }

@@ -22,5 +22,7 @@ private:
     bool hasStopped = false;
     int subscribedServiceId = 0;
     cMessage* sendBeacon;
+    std::string srcJunc_;
+    std::string dstJunc_;
 };
 }
